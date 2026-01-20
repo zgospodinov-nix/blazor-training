@@ -10,3 +10,7 @@ TodoApp/.vs/ProjectEvaluation/todoapp.projects.v10.bin
 TodoApp/.vs/ProjectEvaluation/todoapp.strings.v10.bin
 TodoApp/.vs/TodoApp/CopilotIndices/18.3.378.57660/CodeChunks.db
 TodoApp/.vs/TodoApp/CopilotIndices/18.3.378.57660/SemanticSymbols.db
+/.vs
+/TodoApp/.vs/TodoApp/CopilotIndices/18.3.378.57660
+/TodoApp/Domain/bin/Debug/net10.0
+/TodoApp/Domain/obj
