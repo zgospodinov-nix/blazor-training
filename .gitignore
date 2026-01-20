@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/TodoApp/.vs/TodoApp.slnx
+/TodoApp/TodoApp/bin/Debug/net10.0
+/TodoApp/TodoApp/obj
