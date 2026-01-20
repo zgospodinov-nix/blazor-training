@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Domain;
 
 namespace TodoApp.Data;
@@ -23,6 +26,23 @@ public static class InMemoryTodoStore
     }
 
     public static IReadOnlyList<Todo> GetAll() => Todos;
+
+    public static Todo? GetById(Guid id) => Todos.FirstOrDefault(x => x.Id == id);
+
+    public static bool Update(Todo updated)
+    {
+        if (updated == null) throw new ArgumentNullException(nameof(updated));
+        var existing = Todos.FirstOrDefault(x => x.Id == updated.Id);
+        if (existing == null) return false;
+
+        // Update mutable fields only, keep Id and CreatedDate
+        existing.Title = updated.Title;
+        existing.Description = updated.Description;
+        existing.IsCompleted = updated.IsCompleted;
+        existing.DueDate = updated.DueDate;
+
+        return true;
+    }
 
     public static bool Remove(Guid id)
     {

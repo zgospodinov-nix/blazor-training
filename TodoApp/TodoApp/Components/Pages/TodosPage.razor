@@ -10,6 +10,7 @@
 </h1>
 
 <TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" />
+<TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" />
 
 @if (!string.IsNullOrEmpty(StatusMessage))
 {
@@ -47,6 +48,8 @@
 
 @code {
     private bool ShowAddModal;
+    private bool ShowEditModal;
+    private Todo? SelectedForEdit;
     private string? StatusMessage;
 
     protected override void OnInitialized()
@@ -56,7 +59,15 @@
 
     private void EditTodo(Guid id)
     {
-        StatusMessage = $"Edit not implemented yet. TodoId: {id}";
+        SelectedForEdit = InMemoryTodoStore.GetById(id);
+        if (SelectedForEdit != null)
+        {
+            ShowEditModal = true;
+        }
+        else
+        {
+            StatusMessage = "Not found";
+        }
     }
 
     private void DeleteTodo(Guid id)
