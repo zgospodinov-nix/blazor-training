@@ -14,3 +14,10 @@ TodoApp/.vs/TodoApp/CopilotIndices/18.3.378.57660/SemanticSymbols.db
 /TodoApp/.vs/TodoApp/CopilotIndices/18.3.378.57660
 /TodoApp/Domain/bin/Debug/net10.0
 /TodoApp/Domain/obj
+
+# GitHub Copilot temporary files
+.copilotSnapshots/
+.copilot-temp/
+
+# Visual Studio internal folder (usually contains Copilot data)
+.vs/
