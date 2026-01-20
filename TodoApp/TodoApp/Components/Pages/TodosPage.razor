@@ -1,9 +1,15 @@
 @page "/todos"
 @using Domain
+@using TodoApp.Data
 
 <PageTitle>Todos</PageTitle>
 
-<h1>Todos</h1>
+<h1 class="d-flex align-items-center">
+    Todos
+    <button class="btn btn-sm btn-primary ms-3" @onclick="() => ShowAddModal = true">Add</button>
+</h1>
+
+<TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" />
 
 @if (!string.IsNullOrEmpty(StatusMessage))
 {
@@ -22,7 +28,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var todo in Todos)
+        @foreach (var todo in InMemoryTodoStore.GetAll())
         {
             <tr>
                 <td>@todo.Title</td>
@@ -40,17 +46,12 @@
 </table>
 
 @code {
-    private List<Todo> Todos = new();
+    private bool ShowAddModal;
     private string? StatusMessage;
 
     protected override void OnInitialized()
     {
-        Todos = new List<Todo>
-        {
-            new Todo { Title = "Buy groceries", Description = "Milk, Bread, Eggs", IsCompleted = false, DueDate = DateTime.UtcNow.AddDays(1) },
-            new Todo { Title = "Read book", Description = "Finish chapter 4", IsCompleted = true, DueDate = DateTime.UtcNow.AddDays(-2) },
-            new Todo { Title = "Call Alice", Description = null, IsCompleted = false, DueDate = null }
-        };
+        // Nothing - using static store
     }
 
     private void EditTodo(Guid id)
@@ -60,6 +61,7 @@
 
     private void DeleteTodo(Guid id)
     {
-        StatusMessage = $"Delete not implemented yet. TodoId: {id}";
+        var removed = InMemoryTodoStore.Remove(id);
+        StatusMessage = removed ? "Deleted" : "Not found";
     }
 }
