@@ -9,6 +9,10 @@
     <button class="btn btn-sm btn-primary ms-3" @onclick="() => ShowAddModal = true">Add</button>
 </h1>
 
+<div class="my-3">
+    <InputText class="form-control w-50" placeholder="Filter todos..." @bind-Value="SearchTerm" @oninput="FilterIncompleted" />
+</div>
+
 <TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" />
 <TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" />
 
@@ -29,7 +33,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var todo in InMemoryTodoStore.GetAll())
+        @foreach (var todo in FilteredTodos)
         {
             <tr>
                 <td>
@@ -72,6 +76,20 @@
     private bool ShowEditModal;
     private Todo? SelectedForEdit;
     private string? StatusMessage;
+
+    private string SearchTerm { get; set; } = string.Empty;
+
+    private IEnumerable<Todo> FilteredTodos { get; set; } = InMemoryTodoStore.GetAll();
+
+    private void FilterIncompleted(ChangeEventArgs args)
+    {
+        SearchTerm = args.Value?.ToString() ?? string.Empty;
+        FilteredTodos = string.IsNullOrWhiteSpace(SearchTerm)
+            ? InMemoryTodoStore.GetAll()
+            : InMemoryTodoStore.GetAll().Where(t =>
+                (t.Title?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (t.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+    }
 
     protected override void OnInitialized()
     {
