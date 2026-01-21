@@ -15,8 +15,8 @@
     <InputText class="form-control w-50" placeholder="Filter todos..." @bind-Value="SearchTerm" @oninput="FilterIncompleted" />
 </div>
 
-<TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" OnSaved="LoadData" />
-<TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" OnSaved="LoadData" />
+<TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" />
+<TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" />
 
 @if (!string.IsNullOrEmpty(StatusMessage))
 {
@@ -35,7 +35,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var todo in _todos)
+        @foreach (var todo in string.IsNullOrWhiteSpace(SearchTerm) ? TodoService.Todos : _filteredCollection)
         {
             <tr>
                 <td>
@@ -63,7 +63,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var c in _completed)
+        @foreach (var c in TodoService.CompletedTodos)
         {
             <tr>
                 <td>@c.Title</td>
@@ -83,36 +83,15 @@
     private string? StatusMessage;
 
     private string SearchTerm { get; set; } = string.Empty;
-
-    private List<Todo> _todos = new();
-    private List<Todo> _completed = new();
-
-
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-        await LoadData();
-    }
-
-    private async Task LoadData()
-    {
-        _todos = await TodoService.GetAllAsync();
-        _completed = await TodoService.GetCompletedAsync();
-        StateHasChanged();
-    }
+    private List<Todo> _filteredCollection = new();
 
     private async Task FilterIncompleted(ChangeEventArgs args)
     {
         SearchTerm = args.Value?.ToString() ?? string.Empty;
 
-        if (string.IsNullOrWhiteSpace(SearchTerm))
-        {
-            _todos = await TodoService.GetAllAsync();
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(SearchTerm)) return;
 
-        _todos = _todos.Where(t =>
+        _filteredCollection = TodoService.Todos.Where(t =>
                 (t.Title?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (t.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
                 .ToList();
@@ -130,13 +109,11 @@
     {
         var removed = await TodoService.DeleteAsync(id);
         StatusMessage = removed ? "Deleted" : "Not found";
-        await LoadData();
     }
 
     private async Task ToggleCompleted(Guid id)
     {
         var success = await TodoService.MarkCompletedAsync(id);
         StatusMessage = success ? "Marked as completed" : "Not found";
-        await LoadData();
     }
 }

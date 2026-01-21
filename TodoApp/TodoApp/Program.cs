@@ -9,7 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Register custom Services
-builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddScoped<ITodoService, TodoService>(); // Demonstrate how app behaves if its a singleton
 
 var app = builder.Build();
 

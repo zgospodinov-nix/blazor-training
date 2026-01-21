@@ -4,10 +4,13 @@ namespace Services.TodoService;
 
 public class TodoService : ITodoService
 {
-    private static readonly List<Todo> _todos = new();
-    private static readonly List<Todo> _completed = new();
+    private readonly List<Todo> _todos = new();
+    private readonly List<Todo> _completed = new();
 
-    static TodoService()
+    public IReadOnlyCollection<Todo> Todos => _todos.AsReadOnly();
+    public IReadOnlyCollection<Todo> CompletedTodos => _completed.AsReadOnly();
+
+    public TodoService()
     {
         _todos.AddRange(new[]
         {
@@ -26,17 +29,20 @@ public class TodoService : ITodoService
 
     public Task<List<Todo>> GetAllAsync()
     {
+        // May call real services or distributed cache to get the data and update the in-process State
         return Task.FromResult(_todos.ToList());
     }
 
     public Task<Todo?> GetByIdAsync(Guid id)
     {
+        // May call real services or distributed cache to get the data and update the in-process State
         var todo = _todos.FirstOrDefault(x => x.Id == id) ?? _completed.FirstOrDefault(x => x.Id == id);
         return Task.FromResult(todo);
     }
 
     public Task<Todo> AddAsync(Todo todo)
     {
+        // May call real services and distributed cache to add new data and update the in-process State
         if (todo == null) throw new ArgumentNullException(nameof(todo));
         _todos.Insert(0, todo);
         return Task.FromResult(todo);
@@ -44,6 +50,7 @@ public class TodoService : ITodoService
 
     public Task<bool> UpdateAsync(Todo todo)
     {
+        // May call real services and distributed cache to update new data and update the in-process State
         if (todo == null) throw new ArgumentNullException(nameof(todo));
         var existing = _todos.FirstOrDefault(x => x.Id == todo.Id) ?? _completed.FirstOrDefault(x => x.Id == todo.Id);
         if (existing == null) return Task.FromResult(false);
@@ -58,6 +65,7 @@ public class TodoService : ITodoService
 
     public Task<bool> DeleteAsync(Guid id)
     {
+        // May call real services and distributed cache to remove data and update the in-process State
         var t = _todos.FirstOrDefault(x => x.Id == id) ?? _completed.FirstOrDefault(x => x.Id == id);
         if (t == null) return Task.FromResult(false);
         if (_todos.Contains(t)) return Task.FromResult(_todos.Remove(t));
@@ -69,6 +77,7 @@ public class TodoService : ITodoService
         return Task.FromResult(_completed.ToList());
     }
 
+    // May call real services and distributed cache to update new data and update the in-process State
     public Task<bool> MarkCompletedAsync(Guid id)
     {
         var t = _todos.FirstOrDefault(x => x.Id == id);

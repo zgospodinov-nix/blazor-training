@@ -4,6 +4,9 @@ namespace Services.TodoService;
 
 public interface ITodoService
 {
+    public IReadOnlyCollection<Todo> Todos { get; }
+    public IReadOnlyCollection<Todo> CompletedTodos { get; }
+
     Task<List<Todo>> GetAllAsync();
 
     Task<List<Todo>> GetCompletedAsync();
