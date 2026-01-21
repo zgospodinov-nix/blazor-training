@@ -1,5 +1,6 @@
 @using Domain
 @using System.ComponentModel.DataAnnotations
+@inject Services.TodoService.ITodoService TodoService
 
 <div class="modal @ModalCss" tabindex="-1" style="display:@(IsVisible ? "block" : "none")" aria-hidden="@(IsVisible ? "false" : "true")">
     <div class="modal-dialog">
@@ -62,6 +63,9 @@
     [Parameter]
     public Todo? Model { get; set; }
 
+    [Parameter]
+    public EventCallback OnSaved { get; set; }
+
     private Todo EditModel { get; set; } = new Todo();
 
     protected override void OnParametersSet()
@@ -83,13 +87,13 @@
 
     private string ModalCss => IsVisible ? "show d-block" : string.Empty;
 
-    private void Close()
+    private async Task Close()
     {
         IsVisible = false;
-        IsVisibleChanged.InvokeAsync(IsVisible);
+        await IsVisibleChanged.InvokeAsync(IsVisible);
     }
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         if (Model == null) return;
 
@@ -103,8 +107,9 @@
             DueDate = EditModel.DueDate
         };
 
-        TodoApp.Data.InMemoryTodoStore.Update(updated);
+        await TodoService.UpdateAsync(updated);
         IsVisible = false;
-        IsVisibleChanged.InvokeAsync(IsVisible);
+        await IsVisibleChanged.InvokeAsync(IsVisible);
+        await OnSaved.InvokeAsync();
     }
 }

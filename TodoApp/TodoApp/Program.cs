@@ -1,3 +1,5 @@
+using Services.TodoService;
+
 using TodoApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register custom Services
+builder.Services.AddScoped<ITodoService, TodoService>();
 
 var app = builder.Build();
 

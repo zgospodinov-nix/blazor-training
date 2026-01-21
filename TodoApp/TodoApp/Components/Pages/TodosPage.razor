@@ -1,6 +1,8 @@
 @page "/todos"
+@using System
+@using System.Linq
 @using Domain
-@using TodoApp.Data
+@using Services.TodoService
 
 <PageTitle>Todos</PageTitle>
 
@@ -13,8 +15,8 @@
     <InputText class="form-control w-50" placeholder="Filter todos..." @bind-Value="SearchTerm" @oninput="FilterIncompleted" />
 </div>
 
-<TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" />
-<TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" />
+<TodoAddModal IsVisible="ShowAddModal" IsVisibleChanged="@(v => ShowAddModal = v)" OnSaved="LoadData" />
+<TodoEditModal IsVisible="ShowEditModal" IsVisibleChanged="@(v => ShowEditModal = v)" Model="SelectedForEdit" OnSaved="LoadData" />
 
 @if (!string.IsNullOrEmpty(StatusMessage))
 {
@@ -33,7 +35,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var todo in FilteredTodos)
+        @foreach (var todo in _todos)
         {
             <tr>
                 <td>
@@ -61,7 +63,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var c in InMemoryTodoStore.GetCompleted())
+        @foreach (var c in _completed)
         {
             <tr>
                 <td>@c.Title</td>
@@ -72,6 +74,9 @@
 </table>
 
 @code {
+    [Inject]
+    public ITodoService TodoService { get; set; } = default!;
+
     private bool ShowAddModal;
     private bool ShowEditModal;
     private Todo? SelectedForEdit;
@@ -79,45 +84,59 @@
 
     private string SearchTerm { get; set; } = string.Empty;
 
-    private IEnumerable<Todo> FilteredTodos { get; set; } = InMemoryTodoStore.GetAll();
+    private List<Todo> _todos = new();
+    private List<Todo> _completed = new();
 
-    private void FilterIncompleted(ChangeEventArgs args)
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _todos = await TodoService.GetAllAsync();
+        _completed = await TodoService.GetCompletedAsync();
+        StateHasChanged();
+    }
+
+    private async Task FilterIncompleted(ChangeEventArgs args)
     {
         SearchTerm = args.Value?.ToString() ?? string.Empty;
-        FilteredTodos = string.IsNullOrWhiteSpace(SearchTerm)
-            ? InMemoryTodoStore.GetAll()
-            : InMemoryTodoStore.GetAll().Where(t =>
+
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            _todos = await TodoService.GetAllAsync();
+            return;
+        }
+
+        _todos = _todos.Where(t =>
                 (t.Title?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (t.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+                (t.Description?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+            
     }
 
-    protected override void OnInitialized()
+    private async Task EditTodo(Guid id)
     {
-        // Nothing - using static store
+        SelectedForEdit = await TodoService.GetByIdAsync(id);
+        if (SelectedForEdit != null) ShowEditModal = true;
+        else StatusMessage = "Not found";
     }
 
-    private void EditTodo(Guid id)
+    private async Task DeleteTodo(Guid id)
     {
-        SelectedForEdit = InMemoryTodoStore.GetById(id);
-        if (SelectedForEdit != null)
-        {
-            ShowEditModal = true;
-        }
-        else
-        {
-            StatusMessage = "Not found";
-        }
-    }
-
-    private void DeleteTodo(Guid id)
-    {
-        var removed = InMemoryTodoStore.Remove(id);
+        var removed = await TodoService.DeleteAsync(id);
         StatusMessage = removed ? "Deleted" : "Not found";
+        await LoadData();
     }
 
-    private void ToggleCompleted(Guid id)
+    private async Task ToggleCompleted(Guid id)
     {
-        var success = InMemoryTodoStore.MarkCompleted(id);
+        var success = await TodoService.MarkCompletedAsync(id);
         StatusMessage = success ? "Marked as completed" : "Not found";
+        await LoadData();
     }
 }

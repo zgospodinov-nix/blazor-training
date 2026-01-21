@@ -1,5 +1,6 @@
 @using Domain
 @using System.ComponentModel.DataAnnotations
+@inject Services.TodoService.ITodoService TodoService
 
 <div class="modal @ModalCss" tabindex="-1" style="display:@(IsVisible ? "block" : "none")" aria-hidden="@(IsVisible ? "false" : "true")">
     <div class="modal-dialog">
@@ -52,22 +53,26 @@
     [Parameter]
     public EventCallback<bool> IsVisibleChanged { get; set; }
 
+    [Parameter]
+    public EventCallback OnSaved { get; set; }
+
     private Todo NewTodo = new Todo();
 
     private string ModalCss => IsVisible ? "show d-block" : string.Empty;
 
-    private void Close()
+    private async Task Close()
     {
         IsVisible = false;
-        IsVisibleChanged.InvokeAsync(IsVisible);
+        await IsVisibleChanged.InvokeAsync(IsVisible);
         NewTodo = new Todo();
     }
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
-        TodoApp.Data.InMemoryTodoStore.Add(NewTodo);
+        await TodoService.AddAsync(NewTodo);
         IsVisible = false;
-        IsVisibleChanged.InvokeAsync(IsVisible);
+        await IsVisibleChanged.InvokeAsync(IsVisible);
+        await OnSaved.InvokeAsync();
         NewTodo = new Todo();
     }
 }
