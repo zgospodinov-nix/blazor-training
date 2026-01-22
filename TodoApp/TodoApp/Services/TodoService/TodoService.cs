@@ -12,9 +12,7 @@ public class TodoService : ITodoService
     public IReadOnlyCollection<Todo> Todos => _todos.AsReadOnly();
     public IReadOnlyCollection<Todo> CompletedTodos => _completed.AsReadOnly();
 
-    private readonly CascadingAppState _appState;
-
-    public TodoService(CascadingAppState appState)
+    public TodoService()
     {
         _todos.AddRange(new[]
         {
@@ -29,8 +27,6 @@ public class TodoService : ITodoService
             _todos.Remove(t);
             _completed.Add(t);
         }
-
-        _appState = appState;
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
@@ -53,7 +49,6 @@ public class TodoService : ITodoService
         // May call real services and distributed cache to add new data and update the in-process State
         if (todo == null) throw new ArgumentNullException(nameof(todo));
         _todos.Insert(0, todo);
-        _appState.Todos = _todos;
         //NotifyStateChanged();
         return Task.FromResult(todo);
     }
@@ -69,7 +64,6 @@ public class TodoService : ITodoService
         existing.Description = todo.Description;
         existing.IsCompleted = todo.IsCompleted;
         existing.DueDate = todo.DueDate;
-        _appState.Todos = _todos;
         //NotifyStateChanged();
         return Task.FromResult(true);
     }
@@ -80,7 +74,6 @@ public class TodoService : ITodoService
         var t = _todos.FirstOrDefault(x => x.Id == id) ?? _completed.FirstOrDefault(x => x.Id == id);
         if (t == null) return Task.FromResult(false);
         if (_todos.Contains(t)) return Task.FromResult(_todos.Remove(t));
-        _appState.Todos = _todos;
         //NotifyStateChanged();
         return Task.FromResult(_completed.Remove(t));
     }
@@ -98,7 +91,6 @@ public class TodoService : ITodoService
         _todos.Remove(t);
         t.IsCompleted = true;
         _completed.Insert(0, t);
-        _appState.CompletedTodos = _completed;
         //NotifyStateChanged();
         return Task.FromResult(true);
     }

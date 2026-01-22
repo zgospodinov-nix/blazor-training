@@ -1,6 +1,5 @@
-using Services.TodoService;
-
 using TodoApp.Components;
+using TodoApp.Services.TodoService;
 
 var builder = WebApplication.CreateBuilder(args);
 
