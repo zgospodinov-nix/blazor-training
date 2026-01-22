@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="Domain/Domain.csproj" Id="dba0aaff-55b5-4978-9695-2e5f34f51676" />
-  <Project Path="Services/Services.csproj" Id="c50979f4-91c9-42a3-b44b-3b5e5fed2218" />
   <Project Path="TodoApp/TodoApp.csproj" />
 </Solution>
