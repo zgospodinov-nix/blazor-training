@@ -1,0 +1,39 @@
+@using Services.TodoService
+@inject ITodoService TodoService
+
+<div class="d-flex align-items-center mb-3">
+    <div class="me-3">
+        <strong>Total:</strong> @TotalCount
+    </div>
+    <div class="me-3">
+        <strong>Active:</strong> @ActiveCount
+    </div>
+    <div class="me-3">
+        <strong>Completed:</strong> @CompletedCount
+    </div>
+    <div class="flex-grow-1">
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar" role="progressbar" style="width:@CompletedPercentage%" aria-valuenow="@CompletedPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <small class="text-muted">@CompletedPercentage% completed</small>
+    </div>
+</div>
+
+@code {
+    private int TotalCount;
+    private int ActiveCount;
+    private int CompletedCount;
+    private int CompletedPercentage;
+
+    
+
+        protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ActiveCount = TodoService.Todos?.Count ?? 0;
+        CompletedCount = TodoService.CompletedTodos?.Count ?? 0;
+        TotalCount = ActiveCount + CompletedCount;
+        CompletedPercentage = TotalCount == 0 ? 0 : (int)Math.Round(CompletedCount * 100.0 / TotalCount);
+    }
+
+}

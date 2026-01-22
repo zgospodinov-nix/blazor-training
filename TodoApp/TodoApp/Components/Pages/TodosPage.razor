@@ -11,6 +11,8 @@
     <button class="btn btn-sm btn-primary ms-3" @onclick="() => ShowAddModal = true">Add</button>
 </h1>
 
+<TodoStats />
+
 <div class="my-3">
     <InputText class="form-control w-50" placeholder="Filter todos..." @bind-Value="SearchTerm" @oninput="FilterIncompleted" />
 </div>
